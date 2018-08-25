@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import model.Chromosome;
 import model.Item;
 
 public class Utility {
@@ -39,7 +40,7 @@ public class Utility {
 		}
 		return sum/items.size();
 	}
-	
+		
 	public static int indexOfMax(ArrayList<Item> items) {
 		int index = 0;
 		double max = items.get(index).valueVersusWeightRatio();
@@ -51,14 +52,7 @@ public class Utility {
 		}
 		return index;
 	}
-	
-	public static String chromosomeToString(byte[] chromosome) {
-		String ret = "";
-		for (byte gene : chromosome)
-			ret += gene;
-		return ret;
-	}
-	
+		
 	public static ArrayList<Item> readDataFile(String filename) {
 		FileReader file;
 		ArrayList<Item> items = new ArrayList<>();
