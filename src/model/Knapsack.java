@@ -17,6 +17,10 @@ public class Knapsack {
 		}
 	}
 	
+	public void setPopulation(ArrayList<Chromosome> population) {
+		this.population = population;
+	}
+
 	public Knapsack(ArrayList<Item> items, ArrayList<Chromosome> population) {
 		this.items = items;
 		this.population = population;

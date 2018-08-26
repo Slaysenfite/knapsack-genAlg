@@ -1,8 +1,10 @@
 package model;
 
+import javax.management.RuntimeErrorException;
+
 import utilities.Utility;
 
-public class Chromosome implements Comparable<Chromosome>{
+public class Chromosome implements Comparable<Chromosome>, Cloneable{
 	
 	private byte[] chromosome;
 	private int fitness;
@@ -36,12 +38,12 @@ public class Chromosome implements Comparable<Chromosome>{
 
 	public String chromosomeToString() {
 		String ret = "";
-		for (byte gene : this.chromosome)
+		for (byte gene : chromosome)
 			ret += gene;
 		return ret + "\n";
 	}
 	
-	public byte[] mutateChromosome(byte[] chromosome) {
+	public byte[] mutateChromosome() {
 		for(int i = 0; i < chromosome.length; i++) {			
 			int chance = Utility.generateRandomBoundedInt(1, 100);
 			if(chance <= 2) {
@@ -52,6 +54,10 @@ public class Chromosome implements Comparable<Chromosome>{
 		return chromosome;
 	}
 
+	public void setChromosome(byte[] chromosome) {
+		this.chromosome = chromosome;
+	}
+
 	@Override
 	public int compareTo(Chromosome c) {
 		if(this.fitness > c.getFitness()) return 1;
@@ -60,5 +66,13 @@ public class Chromosome implements Comparable<Chromosome>{
 		else return -2;
 	}
 	
+	@Override
+	public Chromosome clone() {
+		try {
+			return (Chromosome) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 }

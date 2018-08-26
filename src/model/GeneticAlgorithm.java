@@ -21,10 +21,9 @@ public class GeneticAlgorithm {
 		else return value;
 	}
 	
-	public static void calculateFitnessForEachIndividual(ArrayList<Chromosome> population,
-			ArrayList<Item> items, int maxCapacity, boolean secondChance) {
-		for(int i = 0; i < population.size(); i++) {
-			population.get(i).setFitness(fitnessCalculation(population.get(i).getChromosomeArray(), items, maxCapacity, secondChance));
+	public static void calculateFitnessForEachIndividual(Knapsack knapsack, int maxCapacity, boolean secondChance) {
+		for(int i = 0; i < knapsack.getPopulation().size(); i++) {
+			knapsack.getPopulation().get(i).setFitness(fitnessCalculation(knapsack.getPopulation().get(i).getChromosomeArray(), knapsack.getItems(), maxCapacity, secondChance));
 		}
 	}
 	
@@ -49,9 +48,9 @@ public class GeneticAlgorithm {
 	}
 	
 	
-	public ArrayList<Chromosome> rouletteSelection(Knapsack knapsack) {
+	public static ArrayList<Chromosome> rouletteSelection(Knapsack knapsack) {
 		Collections.sort(knapsack.getPopulation());
-		int totalFitness = sumFitnesses(knapsack.getPopulation());
+		double totalFitness = sumFitnesses(knapsack.getPopulation());
 		double[] relFitness = new double[knapsack.getPopulation().size()];
 		for(int i = 0; i < relFitness.length; i++) {		
 			relFitness[i] = knapsack.getPopulation().get(i).getFitness()/totalFitness;
@@ -61,7 +60,7 @@ public class GeneticAlgorithm {
 		double[] probs = new double[knapsack.getPopulation().size()];
 		for(int i = 0; i < relFitness.length; i++) {		
 			sumRelFitness += relFitness[i];
-			probs[i] = sumRelFitness;
+			probs[i] = sumRelFitness* 10000;
 		}
 		//new population
 		int chance = 0;
@@ -72,7 +71,7 @@ public class GeneticAlgorithm {
 			for(int i = 0; i < knapsack.getPopulation().size(); i++) {
 				chance = Utility.generateRandomBoundedInt(1, 100);
 				if(chance <= probs[i]) {
-					newChromosomes.add(knapsack.getPopulation().get(i));
+					newChromosomes.add(knapsack.getPopulation().get(i).clone());
 					knapsack.getPopulation().remove(i);
 					newPopCount++;
 				}
@@ -81,21 +80,22 @@ public class GeneticAlgorithm {
 		return newChromosomes;
 	}
 	
-	public ArrayList<Chromosome> randomSelection(Knapsack knapsack) {
+	public static ArrayList<Chromosome> randomSelection(Knapsack knapsack) {
 		int randIndex = 0;
 		int newPopCount = 0;
 		ArrayList<Chromosome> newChromosomes = new ArrayList<>();
 		while(newPopCount < knapsack.getPopulation().size()/2)
 		{
 			randIndex = Utility.generateRandomBoundedInt(0, knapsack.getPopulation().size() - 1); //may generate same index
-			newChromosomes.add(knapsack.getPopulation().get(randIndex));
+			newChromosomes.add(knapsack.getPopulation().get(randIndex).clone());
+			knapsack.getPopulation().get(randIndex).setChromosome(null); 
 			knapsack.getPopulation().remove(randIndex);
 			newPopCount++;
 		}		
 		return newChromosomes;
 	}
 	
-	private int sumFitnesses(ArrayList<Chromosome> population) {
+	private static int sumFitnesses(ArrayList<Chromosome> population) {
 		int sum = 0;
 		for(Chromosome c : population) {
 			sum += c.getFitness();
@@ -128,26 +128,31 @@ public class GeneticAlgorithm {
 	}
 	
 	
-	public ArrayList<Chromosome> produceNextGeneration(Knapsack knapsack){
+	public static Knapsack produceNextGeneration(Knapsack knapsack, ArrayList<Item> items){
 		ArrayList<Chromosome> nextGen = new ArrayList<>();
+		ArrayList<Chromosome> offspring = new ArrayList<>();
 		ArrayList<Chromosome> bestOfCurrentGen = rouletteSelection(knapsack);
 		nextGen.addAll(bestOfCurrentGen);
 		int randIndex1 = 0;
 		int randIndex2 = 0;
-		while(!bestOfCurrentGen.isEmpty()) {
+		while(bestOfCurrentGen.size() > 1) {
 			randIndex1 = Utility.generateRandomBoundedInt(0, bestOfCurrentGen.size() - 1);
 			randIndex2 = Utility.generateRandomBoundedInt(0, bestOfCurrentGen.size() - 1);
 			while(randIndex1 == randIndex2)
 				randIndex2 = Utility.generateRandomBoundedInt(0, bestOfCurrentGen.size() - 1);
-			nextGen.addAll(uniformCrossover(bestOfCurrentGen.get(randIndex1).getChromosomeArray(), 
+			offspring.addAll(uniformCrossover(bestOfCurrentGen.get(randIndex1).getChromosomeArray(), 
 					bestOfCurrentGen.get(randIndex2).getChromosomeArray()));
-			bestOfCurrentGen.remove(randIndex1);
-			bestOfCurrentGen.remove(randIndex2);
+			bestOfCurrentGen.set(randIndex1, null);
+			bestOfCurrentGen.set(randIndex2, null);
+			bestOfCurrentGen.removeAll(Collections.singletonList(null));
 		}
-		return nextGen;
+		for(int i = 0; i < offspring.size(); i++)
+			offspring.get(i).mutateChromosome();
+		nextGen.addAll(offspring);
+		return new Knapsack(items, nextGen);
 	}
 	
-	public ArrayList<Chromosome> uniformCrossover(byte[] p1, byte[] p2) {
+	public static ArrayList<Chromosome> uniformCrossover(byte[] p1, byte[] p2) {
 		ArrayList<Chromosome> ret = new ArrayList<>();
 		
 		byte[] o1 = new byte[p1.length];
