@@ -10,7 +10,7 @@ public final class Consts {
     public static int POPULATION_SIZE = 100;
     public static int MAX_GENERATIONS = 1000;
     public static boolean SECOND_CHANCE = true;
-    public static String SELECTION = "random";
+    public static String SELECTION = "roulette";
      public static String FILE_NAME = "TestCases\\TestCase1500.txt";
 
 }
