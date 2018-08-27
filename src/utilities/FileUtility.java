@@ -8,26 +8,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
-import model.Chromosome;
 import model.Item;
 
-public class Utility {
-	
-	public static int MAX_WEIGHT = 40;
-	public static int MIN_WEIGHT = 2;
+import static utilities.Consts.*;
 
-	public static int MAX_VALUE = 75;
-	public static int MIN_VALUE = 5;
-	
+public class FileUtility {
+
 	public static int generateRandomBoundedInt(int min, int max) {
 		return min + (int)(Math.random() * ((max - min) + 1));
 	}
-	
-	public static double distanceBetweenItems(Item i1, Item i2) {
-		return Math.sqrt(Math.pow(Math.abs(i2.getWeight() - i1.getWeight()),2)
-				+ Math.pow(Math.abs(i2.getValue() - i1.getValue()),2));
+
+	public static ArrayList<Integer> generateListOfRandomInts(int min, int max){
+		ArrayList<Integer> list = new ArrayList<>();
+		for (int i = min; i < max; i++)
+			list.add(i);
+		Collections.shuffle(list);
+		return list;
 	}
 	
 	public static double averageRatioOfPopulation(ArrayList<Item> items, byte[] chromosome) {
@@ -39,18 +38,6 @@ public class Utility {
 				continue;
 		}
 		return sum/items.size();
-	}
-		
-	public static int indexOfMax(ArrayList<Item> items) {
-		int index = 0;
-		double max = items.get(index).valueVersusWeightRatio();
-		for(int i = 1; i < items.size(); i++) {
-			if(max <= items.get(i).valueVersusWeightRatio()) {
-				max = items.get(i).valueVersusWeightRatio();
-				index = i;
-			}
-		}
-		return index;
 	}
 		
 	public static ArrayList<Item> readDataFile(String filename) {
@@ -80,8 +67,8 @@ public class Utility {
 		int value = 0;
 	 
 		for (int i = 0; i < numItems; i++) {
-			weight = generateRandomBoundedInt(MIN_WEIGHT, MAX_WEIGHT);
-			value = generateRandomBoundedInt(MIN_VALUE, MAX_VALUE);
+			weight = generateRandomBoundedInt(MIN_ITEM_WEIGHT, MAX_ITEM_WEIGHT);
+			value = generateRandomBoundedInt(MIN_ITEM_VALUE, MAX_ITEM_VALUE);
 			bw.append(weight + "	" + value);
 			if(i == numItems - 1) break;
 			else bw.newLine();
@@ -92,7 +79,7 @@ public class Utility {
 
 	public static void main(String[] args) {
 		try {
-			writeToFile("TestCases//testCase1500.txt", 1500);
+			writeToFile(FILE_NAME, 500);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
