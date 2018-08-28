@@ -6,15 +6,16 @@ public final class Consts {
     public static final int MAX_ITEM_VALUE = 5000;
     public static final int MIN_ITEM_VALUE = 5;
 
-    public static final int KNAPSACK_CAPACITY = 35500;
-    public static final int POPULATION_SIZE = 100;
-    public static final int MAX_GENERATIONS = 100;
-    public static final String SELECTION = "rank";
+    public static final int KNAPSACK_CAPACITY = 33500;
+    public static final int POPULATION_SIZE = 1000;
+    public static final int MAX_GENERATIONS = 1000;
+    public static final String SELECTION = "tournament";
 
     public static final boolean SECOND_CHANCE = true;
     public static final boolean ELITISM = true;
-    public static final boolean OUTPUT_TEST_DATA = true;
+    public static final boolean OUTPUT_TEST_DATA = false;
+    public static final boolean STRICT_WEIGHT_CONSTRAINT = true;
+    public static final boolean BIASED_CREATION = true;
 
-    public static final String FILE_NAME = "C:\\development\\knapsackOptimisation_GA\\knapsack-genAlg\\TestCases\\testCase1500.txt";
-
+    public static final String FILE_NAME = "TestCases\\testCase1500.txt";
 }

@@ -1,5 +1,6 @@
 package model;
 
+import utilities.Consts;
 import utilities.FileUtility;
 
 public class Individual implements Comparable<Individual>, Cloneable{
@@ -8,22 +9,21 @@ public class Individual implements Comparable<Individual>, Cloneable{
 	private int fitness;
 	private boolean selected;
 
-	/*public Individual(int size) {
-		this.fitness = 0;
-		chromosome = new byte[size];
-		for(int i = 0; i < size; i++)
-			chromosome[i] = (byte) FileUtility.generateRandomBoundedInt(0, 1);
-	}*/
-
 	public Individual(int size) {
         this.fitness = 0;
         this.selected = false;
         chromosome = new byte[size];
         int chance;
-        for(int i = 0; i < size; i++) {
-            chance = FileUtility.generateRandomBoundedInt(0, 100);
-            if(chance <= 33) chromosome[i] = 1;
-            else chromosome[i] = 0;
+        if(Consts.BIASED_CREATION){
+            for(int i = 0; i < size; i++) {
+                chance = FileUtility.generateRandomBoundedInt(0, 100);
+                if(chance <= 33) chromosome[i] = 1;
+                else chromosome[i] = 0;
+            }
+        }
+        else{
+            for(int i = 0; i < size; i++)
+                chromosome[i] = (byte) FileUtility.generateRandomBoundedInt(0, 1);
         }
 	}
 
