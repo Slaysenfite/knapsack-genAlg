@@ -26,7 +26,7 @@ public class Knapsack {
 		this.population = population;
 	}
 
-	public ArrayList<Individual> getPopulation() {
+    public ArrayList<Individual> getPopulation() {
 		return population;
 	}
 

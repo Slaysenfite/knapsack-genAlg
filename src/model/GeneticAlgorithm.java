@@ -48,10 +48,49 @@ public class GeneticAlgorithm {
 		}
 		return weight;
 	}
-	
-	
-	public static ArrayList<Individual> rouletteSelection(Knapsack knapsack) {
-		Collections.sort(knapsack.getPopulation());
+
+	public static int getIndexofFittessIndividual(ArrayList<Individual> individuals){
+	    int index = 0;
+	    int max = individuals.get(index).getFitness();
+	    for(int i = 1; i < individuals.size(); i++){
+	        if(max < individuals.get(i).getFitness()){
+	            max = individuals.get(i).getFitness();
+	            index = i;
+            }
+        }
+        return index;
+    }
+
+    public static void ElisistSelection(Knapsack knapsack, ArrayList<Individual> newIndividuals){
+        if(Consts.ELITISM) {
+            int eliteIndex = getIndexofFittessIndividual(knapsack.getPopulation());
+            newIndividuals.add(knapsack.getPopulation().get(eliteIndex));
+            knapsack.getPopulation().get(eliteIndex).setSelected(true);
+        }
+    }
+
+    public static ArrayList<Individual> rankBasedSelection(Knapsack knapsack) {
+        Collections.sort(knapsack.getPopulation());
+        //new population
+        int chance;
+        ArrayList<Individual> newIndividuals = new ArrayList<>();
+        ElisistSelection(knapsack, newIndividuals);
+        while(newIndividuals.size() < knapsack.getPopulation().size()/2)
+        {
+            chance = FileUtility.generateRandomBoundedInt(1, knapsack.getPopulation().size());
+            for(int i = 0; i < knapsack.getPopulation().size(); i++ ) {
+                double rankPercentage = ((i*1.0 + 1)*100)/knapsack.getPopulation().size();
+                if(chance >= rankPercentage && !knapsack.getPopulation().get(i).isSelected()) {
+                    knapsack.getPopulation().get(i).setSelected(true);
+                    newIndividuals.add(knapsack.getPopulation().get(i).clone());
+                    break;
+                }
+            }
+        }
+        return newIndividuals;
+    }
+
+    public static ArrayList<Individual> rouletteSelection(Knapsack knapsack) {
 		double totalFitness = sumPopulationFitness(knapsack.getPopulation());
 		double[] relFitness = new double[knapsack.getPopulation().size()];
 		for(int i = 0; i < relFitness.length; i++) {		
@@ -67,12 +106,14 @@ public class GeneticAlgorithm {
 		//new population
 		int chance;
 		ArrayList<Individual> newIndividuals = new ArrayList<>();
-		while(newIndividuals.size() < knapsack.getPopulation().size()/2)
+        ElisistSelection(knapsack, newIndividuals);
+        while(newIndividuals.size() < knapsack.getPopulation().size()/2)
 		{
-			for(int i = 0; i < knapsack.getPopulation().size(); i++) {
-				chance = FileUtility.generateRandomBoundedInt(0, 100);
-				if(chance <= probabilities[i]) {
-					newIndividuals.add(knapsack.getPopulation().get(i).clone());
+            chance = FileUtility.generateRandomBoundedInt(0, 100);
+            for(int i = 0; i < knapsack.getPopulation().size(); i++ ) {
+				if(chance <= probabilities[i] && !knapsack.getPopulation().get(i).isSelected()) {
+				    knapsack.getPopulation().get(i).setSelected(true);
+                    newIndividuals.add(knapsack.getPopulation().get(i).clone());
 					break;
 				}
 			}
@@ -83,9 +124,8 @@ public class GeneticAlgorithm {
 	public static ArrayList<Individual> randomSelection(Knapsack knapsack) {
 		ArrayList<Individual> newIndividuals = new ArrayList<>();
 		ArrayList<Integer> randIndex = FileUtility.generateListOfRandomInts(1, knapsack.getPopulation().size());
-
-		for(int i = 0; i < knapsack.getPopulation().size()/2; i++)
-		{
+        ElisistSelection(knapsack, newIndividuals);
+        for(int i = 0; i < knapsack.getPopulation().size()/2; i++) {
 			newIndividuals.add(knapsack.getPopulation().get(randIndex.get(i)).clone());
 		}
 		return newIndividuals;
@@ -110,27 +150,25 @@ public class GeneticAlgorithm {
 		}
 		return index;
 	}
-	
-	public int indexOfMaxValue(byte[] individual, ArrayList<Item> items) {
-		int index = 0;
-		int max = items.get(index).getValue();
-		for(int i = 1; i < individual.length; i++) {
-			if(individual[i] == 1 && items.get(i).getValue() > max) {
-				index = i;
-				max = items.get(i).getValue();
-			}
-		}
-		return index;
-	}
-	
-	
+
 	public static ArrayList<Individual> produceNextGeneration(Knapsack knapsack, ArrayList<Item> items, String selectionType){
 		ArrayList<Individual> nextGen = new ArrayList<>();
 		ArrayList<Individual> offspring = new ArrayList<>();
 		ArrayList<Individual> bestOfCurrentGen = new ArrayList<>();
-		if(selectionType.equals("roulette")) bestOfCurrentGen = rouletteSelection(knapsack);
-		if(selectionType.equals("random")) bestOfCurrentGen = randomSelection(knapsack);
-		else System.err.println("Invalid selection mechanism called");
+		switch (selectionType){
+            case "roulette":
+                bestOfCurrentGen = rouletteSelection(knapsack);
+                break;
+            case "rank":
+                bestOfCurrentGen = rankBasedSelection(knapsack);
+                break;
+            case "random":
+                bestOfCurrentGen = randomSelection(knapsack);
+                break;
+            default:
+                System.err.println("Invalid selection mechanism called.");
+                break;
+        }
 		nextGen.addAll(bestOfCurrentGen);
 		int randIndex1, randIndex2;
 		while(bestOfCurrentGen.size() > 1) {
@@ -138,7 +176,6 @@ public class GeneticAlgorithm {
 			randIndex2 = FileUtility.generateRandomBoundedInt(0, bestOfCurrentGen.size() - 1);
 			while(randIndex1 == randIndex2)
 				randIndex2 = FileUtility.generateRandomBoundedInt(0, bestOfCurrentGen.size() - 1);
-
 			offspring.addAll(uniformCrossover(bestOfCurrentGen.get(randIndex1).getChromosomeArray(),
 					bestOfCurrentGen.get(randIndex2).getChromosomeArray()));
 			bestOfCurrentGen.set(randIndex1, null);
@@ -165,35 +202,25 @@ public class GeneticAlgorithm {
             cPoint2 = FileUtility.generateRandomBoundedInt(cPoint1, p1.length);
         }
 
-		if(cPoint1 < cPoint2){
-            for(int i = 0; i < cPoint1; i++) {
-                o1[i] = p1[i];
-                o2[i] = p2[i];
-            }
-            for(int i = cPoint1; i < cPoint2; i++) {
-                o1[i] = p2[i];
-                o2[i] = p1[i];
-            }
-            for(int i = cPoint2; i < p1.length; i++) {
-                o1[i] = p1[i];
-                o2[i] = p2[i];
-            }
-        }
-        else{
-            for(int i = 0; i < cPoint2; i++) {
-                o1[i] = p1[i];
-                o2[i] = p2[i];
-            }
-            for(int i = cPoint2; i < cPoint1; i++) {
-                o1[i] = p2[i];
-                o2[i] = p1[i];
-            }
-            for(int i = cPoint1; i < p1.length; i++) {
-                o1[i] = p1[i];
-                o2[i] = p2[i];
-            }
+        if(cPoint1 > cPoint2){
+            int temp = cPoint2;
+            cPoint2 = cPoint1;
+            cPoint1 = temp;
         }
 
+
+        for(int i = 0; i < cPoint1; i++) {
+            o1[i] = p1[i];
+            o2[i] = p2[i];
+        }
+        for(int i = cPoint1; i < cPoint2; i++) {
+            o1[i] = p2[i];
+            o2[i] = p1[i];
+        }
+        for(int i = cPoint2; i < p1.length; i++) {
+            o1[i] = p1[i];
+            o2[i] = p2[i];
+        }
 
 		ret.add(new Individual(o1));
 		ret.add(new Individual(o2));

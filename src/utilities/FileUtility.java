@@ -63,8 +63,8 @@ public class FileUtility {
 		FileOutputStream fos = new FileOutputStream(fout);
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
 		
-		int weight = 0;
-		int value = 0;
+		int weight;
+		int value;
 	 
 		for (int i = 0; i < numItems; i++) {
 			weight = generateRandomBoundedInt(MIN_ITEM_WEIGHT, MAX_ITEM_WEIGHT);
