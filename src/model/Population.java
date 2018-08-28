@@ -4,12 +4,12 @@ import java.util.ArrayList;
 
 import utilities.FileUtility;
 
-public class Knapsack {
+public class Population {
 	
 	private ArrayList<Item> items;
 	private ArrayList<Individual> population;
 	
-	public Knapsack(ArrayList<Item> items, int populationSize) {
+	public Population(ArrayList<Item> items, int populationSize) {
 		this.items = items;
 		population = new ArrayList<>();
 		for(int i = 0; i < populationSize; i++) {
@@ -17,7 +17,7 @@ public class Knapsack {
 		}
 	}
 
-    public Knapsack(ArrayList<Item> items, ArrayList<Individual> population) {
+    public Population(ArrayList<Item> items, ArrayList<Individual> population) {
         this.items = items;
         this.population = population;
     }
@@ -26,9 +26,18 @@ public class Knapsack {
 		this.population = population;
 	}
 
-	public ArrayList<Individual> getPopulation() {
+    public ArrayList<Individual> getPopulation() {
 		return population;
 	}
+
+	public void enforceStrictWeightConstraint(){
+	    for(int i = 0 ; i < this.population.size(); i++){
+	        if(GeneticAlgorithm.individualWeight(population.get(i).getChromosomeArray(), items) <= 0){
+                population.remove(i);
+                population.add(i, new Individual(items.size()));
+            }
+        }
+    }
 
 	@Override
 	public String toString() {

@@ -1,8 +1,9 @@
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import model.GeneticAlgorithm;
 import model.Item;
-import model.Knapsack;
+import model.Population;
 import utilities.FileUtility;
 import utilities.TestUtility;
 import utilities.Consts;
@@ -17,31 +18,45 @@ public class Main {
         DecimalFormat df = new DecimalFormat("#.##");
 
         ArrayList<Item> items = FileUtility.readDataFile(Consts.FILE_NAME);
-		Knapsack knapsack = new Knapsack(items, Consts.POPULATION_SIZE);
+		Population population = new Population(items, Consts.POPULATION_SIZE);
 
 		int generationCount = 1;
 		while(generationCount < Consts.MAX_GENERATIONS + 1) {
             System.out.println("Generation: " + generationCount);
 
+            if(Consts.STRICT_WEIGHT_CONSTRAINT && generationCount % 50 == 0)
+                population.enforceStrictWeightConstraint();
 
-            GeneticAlgorithm.calculateFitnessForEachIndividual(knapsack.getPopulation(), items);
-			System.out.println("Mean Fitness: " + df.format(TestUtility.meanFitnessOfGeneration(knapsack))
-                    + " Greatest Fitness: " + TestUtility.maxFitnessOfGeneration(knapsack)
+            GeneticAlgorithm.calculateFitnessForEachIndividual(population.getPopulation(), items);
+			System.out.println("Mean Fitness: " + df.format(TestUtility.meanFitnessOfGeneration(population))
+                    + " Greatest Fitness: " + TestUtility.maxFitnessOfGeneration(population)
                     + "\n");
 
-			knapsack.setPopulation(GeneticAlgorithm.produceNextGeneration(knapsack, items, Consts.SELECTION));
+            TestUtility.generationGreatest.add(TestUtility.maxFitnessOfGeneration(population));
+            TestUtility.generationMean.add(TestUtility.meanFitnessOfGeneration(population));
+            TestUtility.generationNumber.add(generationCount);
 
+            population.setPopulation(GeneticAlgorithm.produceNextGeneration(population, items, Consts.SELECTION));
 			generationCount++;
 		}
 		
-	    knapsack.getPopulation().stream().forEach(x -> {
+	   /*population.getPopulation().stream().forEach(x -> {
 	    	System.out.print("Fitness: " + x.getFitness() + " Weight: "  +
                     GeneticAlgorithm.individualWeight(x.getChromosomeArray(), items) + " "
                     + x.chromosomeToString());
-	    });
-		long end = System.currentTimeMillis();
-		System.out.println("Program execution time: " + 1.0 *(end - start)/1000 + "s");
+	    });*/
 
+	   if(Consts.OUTPUT_TEST_DATA){
+           try {
+               TestUtility.writeTestDataToFile("TestResults\\" + Consts.SELECTION + "_pop" + Consts.POPULATION_SIZE +
+                       "_gen" + Consts.MAX_GENERATIONS + "_chance-" + Consts.SECOND_CHANCE + ".csv");
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+       }
+
+        long end = System.currentTimeMillis();
+		System.out.println("Program execution time: " + 1.0 *(end - start)/1000 + "s");
 	}
 
 }
