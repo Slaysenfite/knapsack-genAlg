@@ -117,8 +117,9 @@ public class GeneticAlgorithm {
     public static ArrayList<Individual> rouletteSelection(Population population) {
 		double totalFitness = sumPopulationFitness(population.getPopulation());
 		double[] relFitness = new double[population.getPopulation().size()];
-		for(int i = 0; i < relFitness.length; i++) {		
-			relFitness[i] = population.getPopulation().get(i).getFitness()/totalFitness;
+		for(int i = 0; i < relFitness.length; i++) {
+		    if (totalFitness <= 0) relFitness[i] = 0;
+		    else relFitness[i] = population.getPopulation().get(i).getFitness()/totalFitness;
 		}
 	    //Generate probability intervals for each individual
 		double sumRelFitness = 0;

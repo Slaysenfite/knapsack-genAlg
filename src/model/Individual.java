@@ -23,7 +23,8 @@ public class Individual implements Comparable<Individual>, Cloneable{
         }
         else{
             for(int i = 0; i < size; i++)
-                chromosome[i] = (byte) FileUtility.generateRandomBoundedInt(0, 1);
+                chromosome[i] = 0;
+//                chromosome[i] = (byte) FileUtility.generateRandomBoundedInt(0, 1);
         }
 	}
 

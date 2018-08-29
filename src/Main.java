@@ -40,15 +40,15 @@ public class Main {
 			generationCount++;
 		}
 		
-	   /*population.getPopulation().stream().forEach(x -> {
+	   population.getPopulation().stream().forEach(x -> {
 	    	System.out.print("Fitness: " + x.getFitness() + " Weight: "  +
                     GeneticAlgorithm.individualWeight(x.getChromosomeArray(), items) + " "
                     + x.chromosomeToString());
-	    });*/
+	    });
 
 	   if(Consts.OUTPUT_TEST_DATA){
            try {
-               TestUtility.writeTestDataToFile("TestResults\\" + Consts.SELECTION + "_pop" + Consts.POPULATION_SIZE +
+               TestUtility.writeTestDataToFile("C:\\development\\knapsackOptimisation_GA\\knapsack-genAlg\\TestResults\\" + Consts.SELECTION + "_pop" + Consts.POPULATION_SIZE +
                        "_gen" + Consts.MAX_GENERATIONS + "_chance-" + Consts.SECOND_CHANCE + ".csv");
            } catch (IOException e) {
                e.printStackTrace();
