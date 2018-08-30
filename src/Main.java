@@ -17,18 +17,18 @@ public class Main {
 
         DecimalFormat df = new DecimalFormat("#.##");
 
-        ArrayList<Item> items = FileUtility.readDataFile(Consts.FILE_NAME);
+        ArrayList<Item> items = FileUtility.readDataFile(Consts.DATA_FILE_NAME);
 		Population population = new Population(items, Consts.POPULATION_SIZE);
 
 		int generationCount = 1;
-		while(generationCount < Consts.MAX_GENERATIONS + 1) {
+		while(generationCount <= Consts.MIN_GENERATIONS + 1 || TestUtility.meanFitnessOfGeneration(population) != TestUtility.maxFitnessOfGeneration(population)) {
             System.out.println("Generation: " + generationCount);
 
             if(Consts.STRICT_WEIGHT_CONSTRAINT && generationCount % 50 == 0)
                 population.enforceStrictWeightConstraint();
 
             GeneticAlgorithm.calculateFitnessForEachIndividual(population.getPopulation(), items);
-			System.out.println("Mean Fitness: " + df.format(TestUtility.meanFitnessOfGeneration(population))
+            System.out.println("Mean Fitness: " + df.format(TestUtility.meanFitnessOfGeneration(population))
                     + " Greatest Fitness: " + TestUtility.maxFitnessOfGeneration(population)
                     + "\n");
 
@@ -46,10 +46,12 @@ public class Main {
                     + x.chromosomeToString());
 	    });*/
 
+	   System.out.println("Best Solution: "
+               + population.getPopulation().get(GeneticAlgorithm.getIndexofFittessIndividual(population.getPopulation())).chromosomeToString());
+
 	   if(Consts.OUTPUT_TEST_DATA){
            try {
-               TestUtility.writeTestDataToFile("TestResults\\" + Consts.SELECTION + "_pop" + Consts.POPULATION_SIZE +
-                       "_gen" + Consts.MAX_GENERATIONS + "_chance-" + Consts.SECOND_CHANCE + ".csv");
+               TestUtility.writeTestDataToFile(Consts.TEST_FILE_NAME);
            } catch (IOException e) {
                e.printStackTrace();
            }

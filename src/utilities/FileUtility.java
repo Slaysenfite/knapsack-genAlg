@@ -79,7 +79,7 @@ public class FileUtility {
 
 	public static void main(String[] args) {
 		try {
-			writeToFile(FILE_NAME, 500);
+			writeToFile(DATA_FILE_NAME, 500);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

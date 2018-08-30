@@ -1,6 +1,7 @@
 package utilities;
 
 import model.Individual;
+import model.Item;
 import model.Population;
 
 import java.io.*;
@@ -21,12 +22,12 @@ public class TestUtility {
         return max;
     }
 
-    public static double meanFitnessOfGeneration(Population population){
+    public static double meanFitnessOfGeneration(Population population) {
         double sum = 0.0;
-        for(Individual i : population.getPopulation()){
+        for (Individual i : population.getPopulation()) {
             sum += i.getFitness();
         }
-        return sum/ population.getPopulation().size();
+        return sum / population.getPopulation().size();
     }
 
     public static void writeTestDataToFile(String filename) throws IOException {

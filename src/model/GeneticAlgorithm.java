@@ -5,22 +5,23 @@ import java.util.Collections;
 
 import utilities.Consts;
 import utilities.FileUtility;
+import utilities.TestUtility;
 
 public class GeneticAlgorithm {
-	
-	public static int fitnessCalculation(byte[] individual, ArrayList<Item> items) {
-		int value = individualValue(individual, items);
-		int weight = individualWeight(individual, items);
-		if(weight > Consts.KNAPSACK_CAPACITY) {
-			int chance = FileUtility.generateRandomBoundedInt(0, 100);
-			if (chance > 50 && Consts.SECOND_CHANCE == true) {
-				individual[indexOfMaxWeight(individual, items)] = 0;
-				return fitnessCalculation(individual, items);
-			}
-			else return 0;
-		} 
-		else return value;
-	}
+
+    public static int fitnessCalculation(byte[] individual, ArrayList<Item> items) {
+        int value = individualValue(individual, items);
+        int weight = individualWeight(individual, items);
+        if(weight > Consts.KNAPSACK_CAPACITY) {
+            int chance = FileUtility.generateRandomBoundedInt(0, 100);
+            if (chance > 50 && Consts.SECOND_CHANCE == true) {
+                individual[indexOfMaxWeight(individual, items)] = 0;
+                return fitnessCalculation(individual, items);
+            }
+            else return 0;
+        }
+        else return value;
+    }
 
     public static void calculateFitnessForEachIndividual(ArrayList<Individual> individuals, ArrayList<Item> items) {
 	    for(int i = 0; i < individuals.size(); i++){
@@ -50,7 +51,7 @@ public class GeneticAlgorithm {
 
 	public static int getIndexofFittessIndividual(ArrayList<Individual> individuals){
 	    int index = 0;
-	    int max = individuals.get(index).getFitness();
+	    double max = individuals.get(index).getFitness();
 	    for(int i = 1; i < individuals.size(); i++){
 	        if(max < individuals.get(i).getFitness()){
 	            max = individuals.get(i).getFitness();
@@ -58,6 +59,11 @@ public class GeneticAlgorithm {
             }
         }
         return index;
+    }
+
+    private static void unflagSelectionForPopuation(Population population){
+        for(Individual individual: population.getPopulation())
+            individual.setSelected(false);
     }
 
     public static void ElisistSelection(Population population, ArrayList<Individual> newIndividuals){
@@ -72,23 +78,26 @@ public class GeneticAlgorithm {
         ArrayList<Individual> newIndividuals = new ArrayList<>();
         ArrayList<Individual> tournamentList;
         ElisistSelection(population, newIndividuals);
-	    int tournamentSize = 2;
+	    int tournamentSize = 6;
         int tournamentIndex;
         while(newIndividuals.size() < population.getPopulation().size()/2){
             tournamentList = new ArrayList<>();
             while(tournamentList.size() < tournamentSize) {
                 tournamentIndex = FileUtility.generateRandomBoundedInt(0, population.getPopulation().size() - 1);
-//                if (!population.getPopulation().get(tournamentIndex).isSelected()) {
-//                    population.getPopulation().get(tournamentIndex).setSelected(true);
+               if (!population.getPopulation().get(tournamentIndex).isSelected()) {
+                    population.getPopulation().get(tournamentIndex).setSelected(true);
                     tournamentList.add(population.getPopulation().get(tournamentIndex));
-//                }
+                }
             }
             Collections.sort(tournamentList);
             Collections.reverse(tournamentList);
             if(!tournamentList.isEmpty()){
                 newIndividuals.add(tournamentList.get(0));
+                for(int i = 1; i < tournamentList.size(); i++)
+                tournamentList.get(i).setSelected(false);
             }
         }
+        unflagSelectionForPopuation(population);
 	    return newIndividuals;
     }
 
@@ -111,14 +120,16 @@ public class GeneticAlgorithm {
                 }
             }
         }
+        unflagSelectionForPopuation(population);
         return newIndividuals;
     }
 
     public static ArrayList<Individual> rouletteSelection(Population population) {
 		double totalFitness = sumPopulationFitness(population.getPopulation());
 		double[] relFitness = new double[population.getPopulation().size()];
-		for(int i = 0; i < relFitness.length; i++) {		
-			relFitness[i] = population.getPopulation().get(i).getFitness()/totalFitness;
+		for(int i = 0; i < relFitness.length; i++) {
+		    if(totalFitness == 0) relFitness[i] = 0;
+			else relFitness[i] = population.getPopulation().get(i).getFitness()/totalFitness;
 		}
 	    //Generate probability intervals for each individual
 		double sumRelFitness = 0;
@@ -141,8 +152,9 @@ public class GeneticAlgorithm {
 					break;
 				}
 			}
-		}		
-		return newIndividuals;
+		}
+        unflagSelectionForPopuation(population);
+        return newIndividuals;
 	}
 	
 	public static ArrayList<Individual> randomSelection(Population population) {
@@ -162,7 +174,7 @@ public class GeneticAlgorithm {
 		}
 		return sum;
 	}
-	
+
 	public static int indexOfMaxWeight(byte[] individual, ArrayList<Item> items) {
 		int index = 0;
 		int max = items.get(index).getWeight();
@@ -213,6 +225,25 @@ public class GeneticAlgorithm {
             nextGen.add(new Individual(offspring.get(i).mutateChromosome()));
         }
         calculateFitnessForEachIndividual(nextGen, items);
+
+		if(Consts.OVERWEIGHT_REPLACEMENT){
+            Collections.sort(bestOfCurrentGen);
+            Collections.reverse(bestOfCurrentGen);
+            for(int i = 0; i < nextGen.size(); i++) {
+                if(nextGen.get(i).getFitness() == 0) {
+                    for(int c = 0; c < bestOfCurrentGen.size(); c++) {
+                        if(!bestOfCurrentGen.get(c).isSelected()) {
+                            bestOfCurrentGen.get(c).setSelected(true);
+                            bestOfCurrentGen.get(c).mutateChromosome();
+                            nextGen.add(bestOfCurrentGen.get(c));
+                        }
+                        nextGen.remove(i);
+                        break;
+                    }
+                }
+            }
+        }
+
 		return nextGen;
 	}
 	

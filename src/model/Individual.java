@@ -65,8 +65,8 @@ public class Individual implements Comparable<Individual>, Cloneable{
 	
 	public byte[] mutateChromosome() {
 		for(int i = 0; i < chromosome.length; i++) {			
-			int chance = FileUtility.generateRandomBoundedInt(0, 100);
-			if(chance <= 2) {
+			int chance = FileUtility.generateRandomBoundedInt(1, 200);
+			if(chance <= 1) {
 				if(chromosome[i] == 0) chromosome[i] = 1;
 				else if(chromosome[i] == 1) chromosome[i] = 0;
 			}
