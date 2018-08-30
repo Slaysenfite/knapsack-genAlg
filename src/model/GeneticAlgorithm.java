@@ -60,7 +60,12 @@ public class GeneticAlgorithm {
         return index;
     }
 
-    public static void ElisistSelection(Population population, ArrayList<Individual> newIndividuals){
+    private static void unflagSelectionForPopuation(Population population){
+        for(Individual individual: population.getPopulation())
+            individual.setSelected(false);
+    }
+
+    public static void elitistSelection(Population population, ArrayList<Individual> newIndividuals){
         if(Consts.ELITISM) {
             int eliteIndex = getIndexofFittessIndividual(population.getPopulation());
             newIndividuals.add(population.getPopulation().get(eliteIndex));
@@ -71,25 +76,28 @@ public class GeneticAlgorithm {
     public static ArrayList<Individual> tournamentSelection(Population population){
         ArrayList<Individual> newIndividuals = new ArrayList<>();
         ArrayList<Individual> tournamentList;
-        ElisistSelection(population, newIndividuals);
-	    int tournamentSize = 2;
+        elitistSelection(population, newIndividuals);
+        int tournamentSize = 6;
         int tournamentIndex;
         while(newIndividuals.size() < population.getPopulation().size()/2){
             tournamentList = new ArrayList<>();
             while(tournamentList.size() < tournamentSize) {
                 tournamentIndex = FileUtility.generateRandomBoundedInt(0, population.getPopulation().size() - 1);
-//                if (!population.getPopulation().get(tournamentIndex).isSelected()) {
-//                    population.getPopulation().get(tournamentIndex).setSelected(true);
+                if (!population.getPopulation().get(tournamentIndex).isSelected()) {
+                    population.getPopulation().get(tournamentIndex).setSelected(true);
                     tournamentList.add(population.getPopulation().get(tournamentIndex));
-//                }
+                }
             }
             Collections.sort(tournamentList);
             Collections.reverse(tournamentList);
             if(!tournamentList.isEmpty()){
                 newIndividuals.add(tournamentList.get(0));
+                for(int i = 1; i < tournamentList.size(); i++)
+                    tournamentList.get(i).setSelected(false);
             }
         }
-	    return newIndividuals;
+        unflagSelectionForPopuation(population);
+        return newIndividuals;
     }
 
 
@@ -98,7 +106,7 @@ public class GeneticAlgorithm {
         //new population
         int chance;
         ArrayList<Individual> newIndividuals = new ArrayList<>();
-        ElisistSelection(population, newIndividuals);
+        elitistSelection(population, newIndividuals);
         while(newIndividuals.size() < population.getPopulation().size()/2)
         {
             chance = FileUtility.generateRandomBoundedInt(1, population.getPopulation().size());
@@ -111,6 +119,7 @@ public class GeneticAlgorithm {
                 }
             }
         }
+        unflagSelectionForPopuation(population);
         return newIndividuals;
     }
 
@@ -131,7 +140,7 @@ public class GeneticAlgorithm {
 		//new population
 		int chance;
 		ArrayList<Individual> newIndividuals = new ArrayList<>();
-        ElisistSelection(population, newIndividuals);
+        elitistSelection(population, newIndividuals);
         while(newIndividuals.size() < population.getPopulation().size()/2)
 		{
             chance = FileUtility.generateRandomBoundedInt(0, 100);
@@ -142,14 +151,15 @@ public class GeneticAlgorithm {
 					break;
 				}
 			}
-		}		
-		return newIndividuals;
+		}
+        unflagSelectionForPopuation(population);
+        return newIndividuals;
 	}
 	
 	public static ArrayList<Individual> randomSelection(Population population) {
 		ArrayList<Individual> newIndividuals = new ArrayList<>();
 		ArrayList<Integer> randIndex = FileUtility.generateListOfRandomInts(1, population.getPopulation().size());
-        ElisistSelection(population, newIndividuals);
+        elitistSelection(population, newIndividuals);
         for(int i = 0; i < population.getPopulation().size()/2; i++) {
 			newIndividuals.add(population.getPopulation().get(randIndex.get(i)).clone());
 		}
@@ -214,6 +224,23 @@ public class GeneticAlgorithm {
             nextGen.add(new Individual(offspring.get(i).mutateChromosome()));
         }
         calculateFitnessForEachIndividual(nextGen, items);
+        if(Consts.OVERWEIGHT_REPLACEMENT){
+            Collections.sort(bestOfCurrentGen);
+            Collections.reverse(bestOfCurrentGen);
+            for(int i = 0; i < nextGen.size(); i++) {
+                if(nextGen.get(i).getFitness() == 0) {
+                    for(int c = 0; c < bestOfCurrentGen.size(); c++) {
+                        if(!bestOfCurrentGen.get(c).isSelected()) {
+                            bestOfCurrentGen.get(c).setSelected(true);
+                            bestOfCurrentGen.get(c).mutateChromosome();
+                            nextGen.add(bestOfCurrentGen.get(c));
+                        }
+                        nextGen.remove(i);
+                        break;
+                    }
+                }
+            }
+        }
 		return nextGen;
 	}
 	
