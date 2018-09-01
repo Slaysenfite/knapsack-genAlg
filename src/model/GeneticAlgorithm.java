@@ -21,10 +21,18 @@ public class GeneticAlgorithm {
 		} 
 		else return value;
 	}
+    public static int repairFitnessCalculation(byte[] individual, ArrayList<Item> items) {
+        while (individualWeight(individual, items) > Consts.KNAPSACK_CAPACITY){
+            individual[indexOfMaxWeight(individual, items)] = 0;
+        }
+        return individualValue(individual, items);
+    }
+
 
     public static void calculateFitnessForEachIndividual(ArrayList<Individual> individuals, ArrayList<Item> items) {
 	    for(int i = 0; i < individuals.size(); i++){
-	        individuals.get(i).setFitness(fitnessCalculation(individuals.get(i).getChromosomeArray(), items));
+	        if(Consts.REPAIR) individuals.get(i).setFitness(repairFitnessCalculation(individuals.get(i).getChromosomeArray(), items));
+	        else individuals.get(i).setFitness(fitnessCalculation(individuals.get(i).getChromosomeArray(), items));
         }
     }
 
@@ -77,7 +85,7 @@ public class GeneticAlgorithm {
         ArrayList<Individual> newIndividuals = new ArrayList<>();
         ArrayList<Individual> tournamentList;
         elitistSelection(population, newIndividuals);
-        int tournamentSize = 6;
+        int tournamentSize = 12;
         int tournamentIndex;
         while(newIndividuals.size() < population.getPopulation().size()/2){
             tournamentList = new ArrayList<>();
@@ -220,9 +228,11 @@ public class GeneticAlgorithm {
 			bestOfCurrentGen.set(randIndex2, null);
 			bestOfCurrentGen.removeAll(Collections.singletonList(null));
 		}
-		for(int i = 0; i < offspring.size(); i++) {
+
+        for(int i = 0; i < offspring.size(); i++) {
             nextGen.add(new Individual(offspring.get(i).mutateChromosome()));
         }
+
         calculateFitnessForEachIndividual(nextGen, items);
         if(Consts.OVERWEIGHT_REPLACEMENT){
             Collections.sort(bestOfCurrentGen);

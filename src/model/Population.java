@@ -39,6 +39,20 @@ public class Population {
         }
     }
 
+    public int totalItemWeight(){
+	    int weight = 0;
+	    for(Item item : items)
+	        weight += item.getWeight();
+	    return weight;
+    }
+
+    public int totalItemValue(){
+        int value = 0;
+        for(Item item : items)
+            value  += item.getValue();
+        return value ;
+    }
+
 	@Override
 	public String toString() {
 		String ret = "";
