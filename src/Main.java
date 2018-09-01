@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+
 import model.GeneticAlgorithm;
 import model.Item;
 import model.Population;
@@ -19,13 +20,12 @@ public class Main {
 
         ArrayList<Item> items = FileUtility.readDataFile(Consts.DATA_FILE_NAME);
 		Population population = new Population(items, Consts.POPULATION_SIZE);
+        System.out.println("Total weight of items: " + population.totalItemWeight());
+        System.out.println("Total value of items: " + population.totalItemValue());
 
 		int generationCount = 1;
-        while(generationCount <= Consts.MIN_GENERATIONS + 1 || TestUtility.meanFitnessOfGeneration(population) != TestUtility.maxFitnessOfGeneration(population)) {
+        while(generationCount < Consts.MIN_GENERATIONS + 1 ) {
             System.out.println("Generation: " + generationCount);
-
-            if(Consts.STRICT_WEIGHT_CONSTRAINT && generationCount % 50 == 0)
-                population.enforceStrictWeightConstraint();
 
             GeneticAlgorithm.calculateFitnessForEachIndividual(population.getPopulation(), items);
 			System.out.println("Mean Fitness: " + df.format(TestUtility.meanFitnessOfGeneration(population))
